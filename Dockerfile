@@ -10,6 +10,4 @@ COPY . .
 
 RUN go build -o /steam-game-version-manager cmd/app/main.go
 
-EXPOSE 7778
-
 CMD [ "/steam-game-version-manager" ]

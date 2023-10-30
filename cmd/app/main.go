@@ -3,7 +3,9 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"log"
+	"os"
 	"steam-version-notificator/internal/database"
 	"steam-version-notificator/internal/handlers"
 	authHandlers "steam-version-notificator/internal/handlers/auth"
@@ -13,6 +15,11 @@ import (
 )
 
 func main() {
+	envErr := godotenv.Load()
+	if envErr != nil {
+		log.Fatalf("failed to load env: %v", envErr.Error())
+	}
+
 	database.ConnectDatabase()
 
 	engine := gin.Default()
@@ -54,7 +61,7 @@ func main() {
 	api.DELETE("/build/:id", buildHandlers.DeleteBuildHandler)
 	api.PATCH("/build/:id", buildHandlers.EditBuildHandler)
 
-	runErr := engine.Run(":7778")
+	runErr := engine.Run(":" + os.Getenv("PORT"))
 	if runErr != nil {
 		log.Fatalf("failed to run: %v", runErr.Error())
 	}
