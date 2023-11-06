@@ -6,6 +6,8 @@ COPY go.mod ./
 
 RUN go mod download
 
+RUN apt-get update && apt-get install -y sqlite3
+
 COPY . .
 
 RUN go build -o /steam-game-version-manager cmd/app/main.go
