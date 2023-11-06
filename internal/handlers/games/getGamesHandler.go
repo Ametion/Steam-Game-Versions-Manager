@@ -1,20 +1,20 @@
 package gameHandlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"steam-version-notificator/internal/database"
 	databaseModels "steam-version-notificator/internal/database/models"
 	"steam-version-notificator/internal/models/response"
 )
 
-func GetGamesHandler(context *gin.Context) {
+func GetGamesHandler(context *gfx.Context) {
 	var games []response.GameResponse
 	var dbGames []databaseModels.Game
 
 	gamesInfo := database.GetDatabase().Preload("Builds").Find(&dbGames)
 
 	if gamesInfo.Error != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: gamesInfo.Error.Error(),
 			Code:    400,
 		})
@@ -33,5 +33,5 @@ func GetGamesHandler(context *gin.Context) {
 		games = append(games, game)
 	}
 
-	context.JSON(200, games)
+	context.SendJSON(200, games)
 }

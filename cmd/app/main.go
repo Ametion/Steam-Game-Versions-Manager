@@ -1,8 +1,7 @@
 package main
 
 import (
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -10,7 +9,7 @@ import (
 	"steam-version-notificator/internal/handlers"
 	authHandlers "steam-version-notificator/internal/handlers/auth"
 	buildHandlers "steam-version-notificator/internal/handlers/builds"
-	"steam-version-notificator/internal/handlers/games"
+	gameHandlers "steam-version-notificator/internal/handlers/games"
 	"steam-version-notificator/pkg/helpers/middlewares"
 )
 
@@ -22,44 +21,43 @@ func main() {
 
 	database.ConnectDatabase()
 
-	engine := gin.Default()
+	engine := gfx.NewGFXEngine()
 
-	myCors := cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		AllowCredentials: true,
-	})
+	cors := gfx.CorsConfig{
+		AllowedOrigins: []string{"http://localhost:3000"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
+	}
 
-	engine.Use(myCors)
+	engine.UseCors(cors)
 
 	auth := engine.Group("/auth")
 
-	auth.POST("/login", authHandlers.LoginHandler)
-	auth.POST("/register", authHandlers.RegisterHandler)
+	auth.Post("/login", authHandlers.LoginHandler)
+	auth.Post("/register", authHandlers.RegisterHandler)
 
 	api := engine.Group("/api")
 
-	api.Use(middlewares.AuthorizationMiddleware())
+	api.UseMiddleware(middlewares.AuthorizationMiddleware)
 
-	api.GET("/users", authHandlers.GetUsersHandler)
+	api.Get("/users", authHandlers.GetUsersHandler)
 	//Route for change chosen user permission
-	api.POST("/user", authHandlers.ChangeUserPermissionHandler)
+	api.Post("/user", authHandlers.ChangeUserPermissionHandler)
 
-	api.GET("/check", handlers.CheckVersionsHandler)
+	api.Get("/check", handlers.CheckVersionsHandler)
 
 	//Games
-	api.GET("/games", gameHandlers.GetGamesHandler)
-	api.GET("/game/:id", gameHandlers.GetGameHandler)
-	api.POST("/game", gameHandlers.AddGameHandler)
-	api.DELETE("/game/:id", gameHandlers.DeleteGameHandler)
+	api.Get("/games", gameHandlers.GetGamesHandler)
+	api.Get("/game/:id", gameHandlers.GetGameHandler)
+	api.Post("/game", gameHandlers.AddGameHandler)
+	api.Delete("/game/:id", gameHandlers.DeleteGameHandler)
 
 	//Builds
-	api.GET("/builds", buildHandlers.GetBuildsHandler)
-	api.GET("/build/:id", buildHandlers.GetBuildHandler)
-	api.POST("/build", buildHandlers.AddBuildHandler)
-	api.DELETE("/build/:id", buildHandlers.DeleteBuildHandler)
-	api.PATCH("/build/:id", buildHandlers.EditBuildHandler)
+	api.Get("/builds", buildHandlers.GetBuildsHandler)
+	api.Get("/build/:id", buildHandlers.GetBuildHandler)
+	api.Post("/build", buildHandlers.AddBuildHandler)
+	api.Delete("/build/:id", buildHandlers.DeleteBuildHandler)
+	api.Patch("/build/:id", buildHandlers.EditBuildHandler)
 
 	runErr := engine.Run(":" + os.Getenv("PORT"))
 	if runErr != nil {

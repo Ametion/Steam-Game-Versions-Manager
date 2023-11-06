@@ -1,19 +1,19 @@
 package buildHandlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"steam-version-notificator/internal/database"
 	databaseModels "steam-version-notificator/internal/database/models"
 	"steam-version-notificator/internal/models/request"
 	"steam-version-notificator/internal/models/response"
 )
 
-func AddBuildHandler(context *gin.Context) {
+func AddBuildHandler(context *gfx.Context) {
 	var body request.AddBuildBody
-	userId := context.GetUint("user")
+	userId := context.GetItem("user").(uint)
 
-	if bindErr := context.ShouldBindJSON(&body); bindErr != nil {
-		context.JSON(400, response.Response{
+	if bindErr := context.SetBody(&body); bindErr != nil {
+		context.SendJSON(400, response.Response{
 			Message: bindErr.Error(),
 			Code:    400,
 		})
@@ -30,7 +30,7 @@ func AddBuildHandler(context *gin.Context) {
 		}
 	}()
 	if tx.Error != nil {
-		context.JSON(500, response.Response{
+		context.SendJSON(500, response.Response{
 			Message: tx.Error.Error(),
 			Code:    500,
 		})
@@ -48,7 +48,7 @@ func AddBuildHandler(context *gin.Context) {
 
 	if creationErr := tx.Create(&newBuild).Error; creationErr != nil {
 		tx.Rollback()
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: creationErr.Error(),
 			Code:    400,
 		})
@@ -57,7 +57,7 @@ func AddBuildHandler(context *gin.Context) {
 
 	if updateErr := tx.Model(&databaseModels.Build{}).Where("game_id = ?", body.GameId).Not("id", newBuild.Id).Update("in_use", false).Error; updateErr != nil {
 		tx.Rollback()
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: updateErr.Error(),
 			Code:    400,
 		})
@@ -65,14 +65,14 @@ func AddBuildHandler(context *gin.Context) {
 	}
 
 	if commitErr := tx.Commit().Error; commitErr != nil {
-		context.JSON(500, response.Response{
+		context.SendJSON(500, response.Response{
 			Message: commitErr.Error(),
 			Code:    500,
 		})
 		return
 	}
 
-	context.JSON(201, response.Response{
+	context.SendJSON(201, response.Response{
 		Message: "Build added successfully",
 		Code:    201,
 	})

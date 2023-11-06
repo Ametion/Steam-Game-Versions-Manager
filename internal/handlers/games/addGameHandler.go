@@ -1,7 +1,7 @@
 package gameHandlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"github.com/parnurzeal/gorequest"
 	"steam-version-notificator/internal/database"
 	databaseModels "steam-version-notificator/internal/database/models"
@@ -9,11 +9,11 @@ import (
 	"steam-version-notificator/internal/models/response"
 )
 
-func AddGameHandler(context *gin.Context) {
+func AddGameHandler(context *gfx.Context) {
 	var body request.AddGameBody
 
-	if bodyErr := context.ShouldBindJSON(&body); bodyErr != nil {
-		context.JSON(400, response.Response{
+	if bodyErr := context.SetBody(&body); bodyErr != nil {
+		context.SendJSON(400, response.Response{
 			Message: bodyErr.Error(),
 			Code:    400,
 		})
@@ -40,14 +40,14 @@ func AddGameHandler(context *gin.Context) {
 	creationInfo := database.GetDatabase().Create(&newGame)
 
 	if creationInfo.Error != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: creationInfo.Error.Error(),
 			Code:    400,
 		})
 		return
 	}
 
-	context.JSON(201, response.Response{
+	context.SendJSON(201, response.Response{
 		Message: "Game added successfully",
 		Code:    201,
 	})

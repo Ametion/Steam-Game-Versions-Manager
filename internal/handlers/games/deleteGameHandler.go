@@ -1,13 +1,13 @@
 package gameHandlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"steam-version-notificator/internal/database"
 	databaseModels "steam-version-notificator/internal/database/models"
 	"steam-version-notificator/internal/models/response"
 )
 
-func DeleteGameHandler(context *gin.Context) {
+func DeleteGameHandler(context *gfx.Context) {
 	gameId := context.Param("id")
 
 	var game databaseModels.Game
@@ -16,7 +16,7 @@ func DeleteGameHandler(context *gin.Context) {
 		First(&game)
 
 	if gamesInfo.Error != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: gamesInfo.Error.Error(),
 			Code:    400,
 		})
@@ -27,7 +27,7 @@ func DeleteGameHandler(context *gin.Context) {
 		deleteBuildInfo := database.GetDatabase().Delete(&game.Builds[i])
 
 		if deleteBuildInfo.Error != nil {
-			context.JSON(400, response.Response{
+			context.SendJSON(400, response.Response{
 				Message: deleteBuildInfo.Error.Error(),
 				Code:    400,
 			})
@@ -38,14 +38,14 @@ func DeleteGameHandler(context *gin.Context) {
 	deleteGameInfo := database.GetDatabase().Delete(&game)
 
 	if deleteGameInfo.Error != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: deleteGameInfo.Error.Error(),
 			Code:    400,
 		})
 		return
 	}
 
-	context.JSON(200, response.Response{
+	context.SendJSON(200, response.Response{
 		Message: "Game deleted successfully",
 		Code:    200,
 	})

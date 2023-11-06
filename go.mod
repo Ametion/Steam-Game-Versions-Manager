@@ -15,6 +15,7 @@ require (
 )
 
 require (
+	github.com/Ametion/gfx v0.0.4-0.20231106141200-e6ef0f1464f1 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/elazarl/goproxy v0.0.0-20231017160920-1fe6677f404d // indirect

@@ -1,20 +1,20 @@
 package buildHandlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"steam-version-notificator/internal/database"
 	databaseModels "steam-version-notificator/internal/database/models"
 	"steam-version-notificator/internal/models/response"
 )
 
-func GetBuildsHandler(context *gin.Context) {
+func GetBuildsHandler(context *gfx.Context) {
 	var builds []response.BuildResponse
 	var dbBuilds []databaseModels.Build
 
 	buildsInfo := database.GetDatabase().Preload("Game").Preload("LastModified").Find(&dbBuilds)
 
 	if buildsInfo.Error != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: buildsInfo.Error.Error(),
 			Code:    400,
 		})
@@ -37,5 +37,5 @@ func GetBuildsHandler(context *gin.Context) {
 		builds = append(builds, build)
 	}
 
-	context.JSON(200, builds)
+	context.SendJSON(200, builds)
 }

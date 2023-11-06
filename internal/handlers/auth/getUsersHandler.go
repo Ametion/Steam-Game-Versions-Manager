@@ -1,19 +1,19 @@
 package authHandlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"steam-version-notificator/internal/database"
 	databaseModels "steam-version-notificator/internal/database/models"
 	"steam-version-notificator/internal/models/response"
 )
 
-func GetUsersHandler(context *gin.Context) {
-	userStatus := context.MustGet("userStatus").(databaseModels.UserStatus)
+func GetUsersHandler(context *gfx.Context) {
+	userStatus := context.GetItem("userStatus").(databaseModels.UserStatus)
 	var users []response.UserResponse
 	var dbUsers []databaseModels.User
 
 	if userStatus != databaseModels.Admin {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: "You don't have permission to get users list",
 			Code:    400,
 		})
@@ -23,7 +23,7 @@ func GetUsersHandler(context *gin.Context) {
 	usersInfo := database.GetDatabase().Find(&dbUsers)
 
 	if usersInfo.Error != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: usersInfo.Error.Error(),
 			Code:    400,
 		})
@@ -40,5 +40,5 @@ func GetUsersHandler(context *gin.Context) {
 		users = append(users, user)
 	}
 
-	context.JSON(200, users)
+	context.SendJSON(200, users)
 }

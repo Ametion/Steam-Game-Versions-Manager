@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"github.com/parnurzeal/gorequest"
 	"steam-version-notificator/internal/database"
 	databaseModels "steam-version-notificator/internal/database/models"
@@ -10,12 +10,12 @@ import (
 	"steam-version-notificator/pkg/helpers/discord"
 )
 
-func CheckVersionsHandler(context *gin.Context) {
+func CheckVersionsHandler(context *gfx.Context) {
 	goReq := gorequest.New()
 
 	var dbGames []databaseModels.Game
 	if err := database.GetDatabase().Preload("Builds").Find(&dbGames).Error; err != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: err.Error(),
 			Code:    400,
 		})
@@ -27,7 +27,7 @@ func CheckVersionsHandler(context *gin.Context) {
 		_, _, errors := goReq.Get(fmt.Sprintf("https://api.steamcmd.net/v1/info/%s", dbGames[i].GameId)).EndStruct(&game)
 
 		if errors != nil || len(errors) > 0 {
-			context.JSON(400, response.Response{
+			context.SendJSON(400, response.Response{
 				Message: errors[0].Error(),
 				Code:    400,
 			})
@@ -52,7 +52,7 @@ func CheckVersionsHandler(context *gin.Context) {
 			}
 
 			if err := database.GetDatabase().Create(&newBuild).Error; err != nil {
-				context.JSON(400, response.Response{
+				context.SendJSON(400, response.Response{
 					Message: err.Error(),
 					Code:    400,
 				})
@@ -61,7 +61,7 @@ func CheckVersionsHandler(context *gin.Context) {
 
 			notificationErr := discord.SendNotification("New version available for " + dbGames[i].GameName)
 			if notificationErr != nil {
-				context.JSON(400, response.Response{
+				context.SendJSON(400, response.Response{
 					Message: notificationErr.Error(),
 					Code:    400,
 				})
@@ -70,7 +70,7 @@ func CheckVersionsHandler(context *gin.Context) {
 		}
 	}
 
-	context.JSON(200, response.Response{
+	context.SendJSON(200, response.Response{
 		Message: "All Games Checked",
 		Code:    200,
 	})

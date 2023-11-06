@@ -2,7 +2,7 @@ package authHandlers
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"github.com/Ametion/gfx"
 	"steam-version-notificator/internal/database"
 	databaseModels "steam-version-notificator/internal/database/models"
 	"steam-version-notificator/internal/models/request"
@@ -10,17 +10,17 @@ import (
 	"steam-version-notificator/pkg/helpers/converter"
 )
 
-func ChangeUserPermissionHandler(context *gin.Context) {
+func ChangeUserPermissionHandler(context *gfx.Context) {
 	var body request.ChangeUserPermissionBody
-	userStatus := context.MustGet("userStatus").(databaseModels.UserStatus)
+	userStatus := context.GetItem("userStatus").(databaseModels.UserStatus)
 
-	if bodyErr := context.ShouldBindJSON(&body); bodyErr != nil {
-		context.JSON(400, "Something went wrong while set body from request")
+	if bodyErr := context.SetBody(&body); bodyErr != nil {
+		context.SendJSON(400, "Something went wrong while set body from request")
 		return
 	}
 
 	if userStatus == databaseModels.Viewer || userStatus == databaseModels.Blocked {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: "You don't have permission to change users permission",
 			Code:    400,
 		})
@@ -32,7 +32,7 @@ func ChangeUserPermissionHandler(context *gin.Context) {
 	userInfo := database.GetDatabase().Where("id = ?", body.UserId).First(&user)
 
 	if userInfo.Error != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: "Something went wrong while search user with presented id",
 			Code:    400,
 		})
@@ -43,7 +43,7 @@ func ChangeUserPermissionHandler(context *gin.Context) {
 
 	if statusErr != nil {
 		fmt.Println(statusErr)
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: "Something went wrong while convert string to user status",
 			Code:    400,
 		})
@@ -55,14 +55,14 @@ func ChangeUserPermissionHandler(context *gin.Context) {
 	updateInfo := database.GetDatabase().Save(&user)
 
 	if updateInfo.Error != nil {
-		context.JSON(400, response.Response{
+		context.SendJSON(400, response.Response{
 			Message: "Something went wrong while update user status",
 			Code:    400,
 		})
 		return
 	}
 
-	context.JSON(200, response.Response{
+	context.SendJSON(200, response.Response{
 		Message: "User status updated successfully",
 		Code:    200,
 	})
